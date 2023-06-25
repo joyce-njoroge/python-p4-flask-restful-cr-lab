@@ -17,10 +17,29 @@ db.init_app(app)
 api = Api(app)
 
 class Plants(Resource):
-    pass
+       def get(self):
+        plants = Plant.query.all()
+        serialized_plants = [plant.serialize() for plant in plants]
+        return serialized_plants 
+        
+       def post(self):
+        data = request.get_json()
+        plant = Plant(name=data['name'], image=data['image'], price=data['price'])
+        db.session.add(plant)
+        db.session.commit()
+        return plant.serialize(), 201
+
+api.add_resource(Plants, '/plants') 
+        
 
 class PlantByID(Resource):
-    pass
+    def get(self, id):
+        plant = Plant.query.get(id)
+        if plant is None:
+            return {'error': 'Plant not found'}, 404
+        return plant.serialize()
+
+api.add_resource(PlantByID, '/plants/<int:id>')
         
 
 if __name__ == '__main__':
